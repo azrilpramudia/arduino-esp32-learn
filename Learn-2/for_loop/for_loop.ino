@@ -25,6 +25,8 @@
 // perulangan (for loop)
 #define led_pin 5
 
+int counter = 1;
+
 void ledBlink(int atas, int bawah) {
   for(int counter = 1; counter <= atas; counter++) {
     for(int counter2 = 1; counter2 <= bawah; counter2++) {
@@ -56,5 +58,5 @@ void setup() {
 
 // the loop function runs over and over again forever
 void loop() {
-                 
+
 }
