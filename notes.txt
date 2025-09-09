@@ -1,0 +1,34 @@
+1. Tipe data
+int = untuk bilangan bulat (1,2,3....-1,-2,-3)
+float = untuk bilangan pecahan (1.1, 1.2, 1.3, -1.1,-1.2)
+long = untuk bilangan bulat dengan buffer besar (84232831748972385782)
+double = untuk bilangan pecahan dengan buffer besar (1000.1)
+const = untuk bilangan tetap dan tidak bisa di ubah
+
+2. fungsi void setup(){} hanya bisa menjalankan code sekali saja
+   pinMode(LED_BUILTIN, OUTPUT); → set pin LED bawaan Arduino sebagai output.
+   Serial.begin(9600); → memulai komunikasi serial dengan baudrate 9600 bps untuk menampilkan teks ke Serial Monitor.
+
+3. fungsi void loop(){} bisa menjalankan code selama berkali - kali tanpa batas
+4. if else logika untuk pengkondisian
+5. STA / AP
+Apa itu WiFi.mode()?
+
+Fungsi WiFi.mode() digunakan untuk mengatur mode WiFi pada modul ESP.
+ESP8266/ESP32 bisa bekerja dalam beberapa mode jaringan:
+
+WIFI_STA → Station mode (sebagai client).
+WIFI_AP → Access Point mode (ESP jadi hotspot).
+WIFI_AP_STA → Dual mode (bisa jadi AP dan Station sekaligus).
+WIFI_OFF → Mematikan WiFi.
+
+6.
+
+
+Operator Perbandingan Sama dengan (==)
+Operator Perbandingan Tidak Sama dengan (!=)
+Operator Perbandingan Lebih Besar dari (>)
+Operator Perbandingan Lebih Besar dari atau Sama dengan (>=)
+Operator Perbandingan Kurang dari (<)
+Operator Perbandingan Kurang dari atau Sama dengan (<=)
+Operato pe
