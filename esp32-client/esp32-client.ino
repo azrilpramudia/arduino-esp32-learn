@@ -4,7 +4,7 @@
 const char* ssid = "ESP32-Access-Point3";
 const char* password = "123456789";
 
-const char* serverURL = "http://192.168.4.1/";
+// const char* serverURL = "http://192.168.4.1/";
 const char* urlTemp = "http://192.168.4.1/temperature";
 const char* urlHumi = "http://192.168.4.1/humidity";
 const char* urlPres = "http://192.168.4.1/pressure";
@@ -49,12 +49,13 @@ void loop() {
     prev = now;
 
     if(WiFi.status() == WL_CONNECTED) {
-      String resp = httpGET(serverURL);
+      // String resp = httpGET(serverURL);
       String temp = httpGET(urlTemp);
       String humi = httpGET(urlHumi);
       String pres = httpGET(urlPres);
-      Serial.print("Server response: ");
-      Serial.println(resp);
+
+      // Serial.print("Server response: ");
+      // Serial.println(resp);
       Serial.print("Temperature: ");
       Serial.println(temp);
       Serial.print("Humidity: ");
