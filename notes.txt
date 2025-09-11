@@ -87,3 +87,8 @@ Broker = server pusat yang menjadi perantara antara pengirim (publisher) dan pen
 8883 → MQTT dengan TLS/SSL (MQTTS).
 8080 → MQTT lewat WebSocket (tanpa TLS).
 8081 → MQTT lewat WebSocket dengan TLS (WSS).
+
+12. Perbedaan MQTT vs MQTTS
+MQTT → biasanya jalan di port 1883 (tanpa enkripsi).
+MQTTS → versi MQTT yang diamankan dengan TLS/SSL.
+Biasanya jalan di port 8883.

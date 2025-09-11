@@ -1,44 +1,57 @@
+// Bagian Import Library
 #include <WiFi.h>
 #include <PubSubClient.h>
 
-// WIFI & MQTT
+// Konfigurasi WiFi & MQTT
 const char* ssid = "LCS-Guest";
 const char* password = "lcsguestwifi2025";
 
-const char* mqtt_server = "broker.hivemq.com";
-const uint16_t mqtt_port = 1883;
+const char* mqtt_server = "broker.hivemq.com"; // alamat broker MQTT (di sini broker publik HiveMQ).
+const uint16_t mqtt_port = 1883; // port standar MQTT (tanpa TLS).
 
 // Topic
-const char* topic_pub_temp = "esp32/temperature";
-const char* topic_pub_humi = "esp32/humidity";
-const char* topic_sub_led = "esp32/output";
+const char* topic_pub_temp = "esp32/temperature"; // topik untuk publish data suhu.
+const char* topic_pub_humi = "esp32/humidity"; // topik untuk publish data kelembapan.
+const char* topic_pub_pres = "esp32/pressure"; // topik publish tekanan
+const char* topic_sub_led = "esp32/output"; // topik yang disubscribe untuk mengontrol LED.
 
-#define ledPin LED_BUILTIN
+// Definisi Pin LED
+// pin LED bawaan ESP32 (biasanya GPIO 2).
+#define ledPin LED_BUILTIN // alias untuk LED bawaan.
 
-WiFiClient espClient;
-PubSubClient client(espClient);
+// Objek WiFi & MQTT
+WiFiClient espClient; // membuat koneksi TCP/IP ke broker MQTT.
+PubSubClient client(espClient); // objek utama untuk publish & subscribe MQTT.
 
-unsigned long lastMsg = 0;
-const unsigned long interval = 5000;
+// Timer untuk publish data
+unsigned long lastMsg = 0; // menyimpan waktu terakhir publish data.
+const unsigned long interval = 5000; // publish setiap 5 detik sekali.
 
+// Fungsi setup_wifi()
+// Menampilkan status WiFi di Serial Monitor.
 void setup_wifi(){
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(ssid);
 
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
+  WiFi.mode(WIFI_STA); // WiFi.mode(WIFI_STA) → mode Station (ESP32 connect ke WiFi).
+  WiFi.begin(ssid, password); // WiFi.begin() → mulai koneksi ke SSID dengan password.
 
-  while(WiFi.status() != WL_CONNECTED){
+  while(WiFi.status() != WL_CONNECTED){ // while(WiFi.status() != WL_CONNECTED) → tunggu sampai WiFi terhubung.
     delay(500);
     Serial.print(".");
   }
   Serial.println();
   Serial.print("WiFi Connected to IP: ");
-  Serial.println(WiFi.localIP());
+  Serial.println(WiFi.localIP()); // WiFi.localIP() → tampilkan alamat IP ESP32 di jaringan lokal.
 }
 
-void callback(char* topic, byte* payload, unsigned int length) {
+// Fungsi callback()
+// Fungsi ini otomatis dipanggil saat ada pesan masuk dari broker MQTT.
+// payload → isi pesan dalam bentuk byte array.
+// topic → nama topik yang diterima.
+// Loop → membaca isi payload dan dikonversi ke String msg.
+void callback(char* topic, byte* payload, unsigned int length) { 
   Serial.print("Message arrived ["); Serial.print(topic); Serial.print("]");
   String msg;
   for(unsigned int i = 0; i < length; i++){
@@ -48,6 +61,9 @@ void callback(char* topic, byte* payload, unsigned int length) {
   }
   Serial.println();
 
+// Mengecek apakah pesan datang dari topik esp32/output.
+// Jika msg == "on" → LED nyala.
+// Jika msg == "off" → LED mati.
   if (String(topic) == topic_sub_led) {
     if (msg == "on") {
       digitalWrite(ledPin, HIGH);
@@ -59,6 +75,9 @@ void callback(char* topic, byte* payload, unsigned int length) {
   }
 }
 
+// Fungsi reconnect()
+// Loop sampai ESP32 berhasil connect ke broker.
+// clientId → ID unik berdasarkan alamat MAC ESP32.
 void reconnect(){
   while(!client.connected()){
     Serial.print("Attempting MQTT Connection... ");
@@ -66,6 +85,8 @@ void reconnect(){
     String clientId = "ESP32Client-";
     clientId += String((uint32_t)ESP.getEfuseMac(), HEX);
 
+    // Jika berhasil connect → subscribe ke topik esp32/output.
+    // Jika gagal → tampilkan error code, lalu coba lagi setelah 5 detik.
     if(client.connect(clientId.c_str())){
       Serial.println("connected");
       client.subscribe(topic_sub_led);
@@ -78,40 +99,58 @@ void reconnect(){
 }
 
 // put your setup code here, to run once:
+// Fungsi setup()
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(9600); // Inisialisasi Serial Monitor dengan baudrate 9600.
 
-  pinMode(ledPin, OUTPUT);
+  pinMode(ledPin, OUTPUT); // Atur pin LED sebagai output, dan matikan LED di awal.
   digitalWrite(ledPin, LOW);
 
-  setup_wifi();
-  client.setServer(mqtt_server, mqtt_port);
-  client.setCallback(callback);
+  // Panggil setup_wifi() → hubungkan ke WiFi.
+  setup_wifi(); 
+  client.setServer(mqtt_server, mqtt_port); // client.setServer() → set alamat dan port broker MQTT.
+  client.setCallback(callback); // client.setCallback() → set fungsi callback untuk pesan masuk.
 }
 
 // put your main code here, to run repeatedly:
+// Mengecek apakah ESP32 masih terhubung ke broker.
 void loop() {
-  if(!client.connected()) {
+  if(!client.connected()) { // Jika tidak → panggil reconnect().
     reconnect();
   }
-  client.loop();
+  client.loop(); // client.loop() → menjaga koneksi tetap aktif dan memanggil callback() jika ada pesan masuk.
 
+  // Hitung waktu, jika sudah lewat 5 detik (interval), maka kirim data baru.
   unsigned long now = millis();
   if (now - lastMsg > interval) {
     lastMsg = now;
 
+    // Buat data dummy:
+    // Suhu: antara 25.0 – 34.9 °C.
+    // Kelembapan: antara 40.0 – 79.9 %
     float temp = 25.0 + (float)(random(0, 1000)) / 100.0f;
     float humi = 40.0 + (float)(random(0, 4000)) / 100.0f;
+    float pres = 1000.0 + (float)(random(0, 200)) / 10.0f;
 
+    // Konversi nilai float ke string (char[]) supaya bisa dikirim via MQTT.
+    // dtostrf(nilai, lebar, presisi, buffer).
     char tempString[8];
     char humiString[8];
+    char presString[8];
+
     dtostrf(temp, 1, 2, tempString);
     dtostrf(humi, 1, 2, humiString);
+    dtostrf(pres, 1, 2, presString);
 
+    // Tampilkan data suhu & kelembapan di Serial Monitor.
+    // Publish data ke broker di topik masing-masing (esp32/temperature & esp32/humidity).
     Serial.print("Publish temperature: "); Serial.println(tempString);
     client.publish(topic_pub_temp, tempString);
 
     Serial.print("Publish humidity: "); Serial.println(humiString);
     client.publish(topic_pub_humi, humiString);
+
+    Serial.print("Publish pressure: "); Serial.println(presString);
+    client.publish(topic_pub_pres, presString);
   }
 }
