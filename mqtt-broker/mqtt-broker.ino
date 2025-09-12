@@ -14,6 +14,8 @@ const char* topic_pub_temp = "esp32/temperature"; // topik untuk publish data su
 const char* topic_pub_humi = "esp32/humidity"; // topik untuk publish data kelembapan.
 const char* topic_pub_pres = "esp32/pressure"; // topik publish tekanan
 const char* topic_sub_led = "esp32/led"; // topik yang disubscribe untuk mengontrol LED.
+const char* topic_sub_led2 = "esp32/led2"; // topik yang disubscribe untuk mengontrol LED.
+const char* topic_sub_data = "esp32/data"; // topik yang disubscribe untuk mengontrol LED.
 
 // Definisi Pin LED
 // pin LED bawaan ESP32 (biasanya GPIO 2).
@@ -64,13 +66,16 @@ void callback(char* topic, byte* payload, unsigned int length) {
 // Mengecek apakah pesan datang dari topik esp32/output.
 // Jika msg == "on" → LED nyala.
 // Jika msg == "off" → LED mati.
-  if (String(topic) == topic_sub_led) {
+  if (String(topic) == topic_sub_led || String(topic) == topic_sub_led2) {
     if (msg == "on") {
       digitalWrite(ledPin, HIGH);
       Serial.println("LED ON");
     } else if (msg == "off") {
       digitalWrite(ledPin, LOW);
       Serial.println("LED OFF");
+    } else if (String(topic) == topic_sub_data) {
+      Serial.print("Data diterima dari esp32/data: ");
+      Serial.println(msg);
     }
   }
 }
@@ -105,6 +110,8 @@ void reconnect(){
     if(client.connect(clientId.c_str())){
       Serial.println("connected");
       client.subscribe(topic_sub_led);
+      client.subscribe(topic_sub_led2);
+      client.subscribe(topic_sub_data);
     } else {
       Serial.print("failed, rc="); Serial.print(client.state());
       Serial.println(" try again in 5 seconds");
