@@ -1,3 +1,4 @@
+// import Library
 #include <BluetoothSerial.h>
 
 BluetoothSerial SerialBT;
@@ -50,7 +51,4 @@ void loop() {
     SerialBT.write(c);
     Serial.write(c);
   }
-  // while (Serial.available()) {
-  //   SerialBT.write(Serial.read());
-  // }
 }
